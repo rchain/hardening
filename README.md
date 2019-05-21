@@ -9,3 +9,9 @@
     * `terraform init` if you're running terraform for the first time
     * `terraform plan`
     * `terraform apply`
+
+Warning: The cloud-init script gets executed only once, when the GCP instance
+         gets created.  So if there are any changes made to the cloud-init
+         script that need to be applied, use `terraform taint
+         google_compute_instance.INSTANCE_NAME` and then `terraform apply`.
+         `terraform apply` alone won't work!

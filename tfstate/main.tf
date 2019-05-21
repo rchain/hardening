@@ -5,15 +5,15 @@ provider "google" {
 }
 
 data "template_file" "script" {
-  template = "${file("${path.module}/cloud-config.txt.tpl")}"
+  template = "${file("${path.module}/cloud-config.yaml.tmpl")}"
 
   vars {
   }
 }
 
 data "template_cloudinit_config" "config" {
-  gzip          = true
-  base64_encode = true
+  gzip          = false
+  base64_encode = false
 
   part {
     filename     = "cloud-config.txt"

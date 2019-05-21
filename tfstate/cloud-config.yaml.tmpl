@@ -7,7 +7,15 @@ packages:
  - unzip
 
 users:
-  - name: terraform
-    ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICR/qyFGuF5YkptuO1KP25Y9qGZAWAAE8QAC2oHK+17N tomas@pyrofex.net
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2siYwsBrvHlJfLqACH+UPeD7BumqC+QDYNATltRltp adam.szkoda@rchain.coop
+ - name: terraform
+   shell: /bin/bash
+   sudo: ALL=(ALL) NOPASSWD:ALL
+   ssh_authorized_keys:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICR/qyFGuF5YkptuO1KP25Y9qGZAWAAE8QAC2oHK+17N tomas@pyrofex.net
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2siYwsBrvHlJfLqACH+UPeD7BumqC+QDYNATltRltp adam.szkoda@rchain.coop
+
+runcmd:
+ - wget https://releases.hashicorp.com/terraform/0.11.13/terraform_0.11.13_linux_amd64.zip
+ - unzip terraform_0.11.13_linux_amd64.zip
+ - install terraform /usr/local/bin/
+ - sudo --user=terraform sh -c 'cd ~; git clone https://github.com/rchain/hardening.git'

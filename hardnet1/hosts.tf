@@ -38,9 +38,4 @@ resource "google_compute_instance" "node_host" {
     user = "root"
     private_key = "${file("~/.ssh/google_compute_engine")}"
   }
-
-  provisioner "file" {
-    source = "${var.rchain_sre_git_crypt_key_file}"
-    destination = "/root/rchain-sre-git-crypt-key"
-  }
 }

@@ -1,16 +1,20 @@
 # Hardening Network
 
-1. Terraform relies on a service account named `terraform`.  In case it gets deleted somehow, it requires a minimum set of permissions:
+1. Terraform relies on a service account named `terraform`.  In case it gets
+   deleted somehow, it requires a minimum set of permissions:
     * Compute Admin
     * Security Admin
     * Service Account Admin
     * Service Account User
     * Project IAM Admin
     * Storage Object Admin
-2. `cd hardnet1`
-3. `terraform init`
-4. `terraform plan`
-5. `terraform apply`
+2. Terraform also stores its state in a GCP bucket named
+   `rchain-terraform-state`.  In case it gets deleted, remember to enable
+   versioning for it (`gsutil versioning set on gs://rchain-terraform-state`).
+3. `cd hardnet1`
+4. `terraform init`
+5. `terraform plan`
+6. `terraform apply`
 
 **Warning!** The cloud-init script gets executed only once, when the GCP instance
 gets created.  So if there are any changes made to the cloud-init script that

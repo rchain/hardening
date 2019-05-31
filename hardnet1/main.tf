@@ -34,12 +34,34 @@ resource "google_storage_bucket_iam_member" "member" {
 }
 
 
+data "template_file" "cloud_config" {
+  template = "${file("${path.module}/cloud-config.yaml.tmpl")}"
+
+  vars {
+  }
+}
+
+data "template_cloudinit_config" "config" {
+  gzip          = false
+  base64_encode = false
+
+  part {
+    filename     = "cloud-config.txt"
+    content_type = "text/cloud-config"
+    content      = "${data.template_file.cloud_config.rendered}"
+  }
+}
+
 resource "google_compute_instance" "node_host" {
   count = "${var.node_count}"
   name = "${var.resources_name}-node${count.index}"
 
   # Nonstandard amount of RAM
   machine_type = "custom-4-16384"
+
+  metadata {
+    user-data = "${data.template_cloudinit_config.config.rendered}"
+  }
 
   boot_disk {
     initialize_params {
@@ -66,11 +88,5 @@ resource "google_compute_instance" "node_host" {
     network = "default"
     access_config {
     }
-  }
-
-  connection {
-    type = "ssh"
-    user = "root"
-    private_key = "${file("~/.ssh/google_compute_engine")}"
   }
 }

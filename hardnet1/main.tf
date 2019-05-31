@@ -52,7 +52,7 @@ data "template_cloudinit_config" "config" {
   }
 }
 
-resource "google_compute_instance" "node_host" {
+resource "google_compute_instance" "node" {
   count = "${var.node_count}"
   name = "${var.resources_name}-node${count.index}"
 

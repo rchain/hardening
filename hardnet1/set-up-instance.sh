@@ -32,3 +32,7 @@ fi
 systemctl reload sshd
 
 systemctl reload nginx
+
+for file in environment.docker rnode.conf; do
+    install --mode=644 /var/lib/cloud/instance/scripts/"$file" --target-directory=/var/lib/rnode-static/
+done

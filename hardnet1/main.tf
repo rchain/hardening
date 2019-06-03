@@ -46,6 +46,12 @@ data "template_cloudinit_config" "config" {
   base64_encode = false
 
   part {
+    filename = "set-up-instance.sh"
+    content_type = "text/x-shellscript"
+    content = "${file("${path.module}/set-up-instance.sh")}"
+  }
+
+  part {
     filename     = "cloud-config.txt"
     content_type = "text/cloud-config"
     content      = "${data.template_file.cloud_config.rendered}"

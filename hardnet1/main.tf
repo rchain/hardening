@@ -34,13 +34,6 @@ resource "google_storage_bucket_iam_member" "member" {
 }
 
 
-data "template_file" "cloud_config" {
-  template = "${file("${path.module}/cloud-config.yaml.tmpl")}"
-
-  vars {
-  }
-}
-
 data "template_cloudinit_config" "config" {
   gzip          = false
   base64_encode = false
@@ -54,7 +47,7 @@ data "template_cloudinit_config" "config" {
   part {
     filename     = "cloud-config.txt"
     content_type = "text/cloud-config"
-    content      = "${data.template_file.cloud_config.rendered}"
+    content      = "${file("${path.module}/cloud-config.yaml")}"
   }
 }
 

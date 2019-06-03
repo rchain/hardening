@@ -8,7 +8,7 @@ terraform {
 
 variable "resources_name" { default = "hardnet1" }
 variable "gcp_zone" { default = "europe-north1-a" }
-variable "node_count" { default = 1 }
+variable "node_count" { default = 2 }
 
 provider "google" {
   project = "developer-222401"
@@ -34,20 +34,42 @@ resource "google_storage_bucket_iam_member" "member" {
 }
 
 
-data "template_cloudinit_config" "config" {
+data "template_cloudinit_config" "node" {
+  count = "${var.node_count}"
+
   gzip          = false
   base64_encode = false
 
   part {
-    filename = "set-up-instance.sh"
+    filename     = "set-up-instance.sh"
     content_type = "text/x-shellscript"
-    content = "${file("${path.module}/set-up-instance.sh")}"
+    content      = "${file("set-up-instance.sh")}"
   }
 
   part {
     filename     = "cloud-config.txt"
     content_type = "text/cloud-config"
-    content      = "${file("${path.module}/cloud-config.yaml")}"
+    content      = "${file("cloud-config.yaml")}"
+  }
+
+  part {
+    filename     = "environment.docker"
+    content_type = "text/x-shellscript"
+    content      = "${file("node-specific/node${count.index}/environment.docker")}"
+  }
+
+  part {
+    filename     = "rnode.conf"
+    content_type = "text/x-shellscript"
+    content      = "${file("node-specific/node${count.index}/rnode.conf")}"
+  }
+}
+
+
+locals {
+  node_cloudinit_config = {
+    "0" = "${data.template_cloudinit_config.node.0.rendered}"
+    "1" = "${data.template_cloudinit_config.node.1.rendered}"
   }
 }
 
@@ -59,7 +81,7 @@ resource "google_compute_instance" "node" {
   machine_type = "custom-4-16384"
 
   metadata {
-    user-data = "${data.template_cloudinit_config.config.rendered}"
+    user-data = "${local.node_cloudinit_config[count.index]}"
   }
 
   boot_disk {

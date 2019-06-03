@@ -721,8 +721,4 @@ users:
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDN8WvI82IXBQcJOUN5GMVCZHOieUkzh2lwSBZ66wZ6ywXsyKL/PJ6o1rWrnPuURPqtV/f5XJE92lzkrNExV2TW3TCNedLQhmK/7sj4PPV2w5wZX8cppBSOdVY7fxMEmOxT3NWo67jNyqpcGW2u89h9SDknuLCkwWkHMYFt4hieUo7BbngCbojzL8nGbl5AJiFGFIstiSpfHbS305f1YgwaIgVPBiKXBA55WXM8cqZgoIcOtk7/AbvrfPpyahIsqp/gcsq+zL5gPgx+UZr9NPTVvoR0L+/ni//1eHfuwoqxQ8Hd1nZZk22/rlQK+cgB/OdhaelS/djnUsJHhBM5Ijgb
 
 
-commands:
-  - ./set-up-instance.sh
-
-
 # vim:filetype=yaml:foldmethod=marker

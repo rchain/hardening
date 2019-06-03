@@ -396,12 +396,7 @@ users:
 
 
 commands:
-  - mkdir -p /var/lib/rnode-static
-  - chmod 710 /var/lib/rnode-static
-  - chgrp www-data /var/lib/rnode-static
-  - mkdir -p /var/lib/rnode-diag
-  - chmod 750 /var/lib/rnode-diag
-  - chgrp www-data /var/lib/rnode-diag
+  - ./set-up-instance.sh
 
 
 # vim:filetype=yaml:foldmethod=marker

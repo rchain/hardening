@@ -387,12 +387,338 @@ write_files:
       a430e3e8ef3cd1f1a79b934305139060274c5e0a0d6e0a8d6d9c54c7c0f695eb
       c1ba19eaedb3a99eade9b5515545cd6af281cef4704e5c478f32a40f61a136fa
     # }}}
+  - path: /etc/systemd/system/mnt-heapdumps.mount # {{{
+    permissions: '0644'
+    content: |
+      [Unit]
+      After=network.target
+
+      [Mount]
+      What=heapdumps.bucket.rchain-dev.tk
+      Where=/mnt/heapdumps
+      Type=gcsfuse
+      Options=_netdev,limit_ops_per_sec=-1
+
+      [Install]
+      WantedBy=multi-user.target
+    # }}}
+  - path: /etc/ssh/sshd_config # {{{
+    content: |
+      #	$OpenBSD: sshd_config,v 1.102 2018/02/16 02:32:40 djm Exp $
+
+      # This is the sshd server system-wide configuration file.  See
+      # sshd_config(5) for more information.
+
+      # This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
+      # The strategy used for options in the default sshd_config shipped with
+      # OpenSSH is to specify options with their default value where
+      # possible, but leave them commented.  Uncommented options override the
+      # default value.
+
+      #Port 22
+      #AddressFamily any
+      #ListenAddress 0.0.0.0
+      #ListenAddress ::
+
+      #HostKey /etc/ssh/ssh_host_rsa_key
+      #HostKey /etc/ssh/ssh_host_ecdsa_key
+      #HostKey /etc/ssh/ssh_host_ed25519_key
+
+      # Ciphers and keying
+      #RekeyLimit default none
+
+      # Logging
+      #SyslogFacility AUTH
+      #LogLevel INFO
+
+      # Authentication:
+
+      #LoginGraceTime 2m
+      #PermitRootLogin prohibit-password
+      #StrictModes yes
+      #MaxAuthTries 6
+      #MaxSessions 10
+
+      #PubkeyAuthentication yes
+
+      # Expect .ssh/authorized_keys2 to be disregarded by default in future.
+      #AuthorizedKeysFile	.ssh/authorized_keys .ssh/authorized_keys2
+
+      #AuthorizedPrincipalsFile none
+
+      #AuthorizedKeysCommand none
+      #AuthorizedKeysCommandUser nobody
+
+      # For this to work you will also need host keys in /etc/ssh/ssh_known_hosts
+      #HostbasedAuthentication no
+      # Change to yes if you don't trust ~/.ssh/known_hosts for
+      # HostbasedAuthentication
+      #IgnoreUserKnownHosts no
+      # Don't read the user's ~/.rhosts and ~/.shosts files
+      #IgnoreRhosts yes
+
+      # To disable tunneled clear text passwords, change to no here!
+      PasswordAuthentication no
+      #PermitEmptyPasswords no
+
+      # Change to yes to enable challenge-response passwords (beware issues with
+      # some PAM modules and threads)
+      ChallengeResponseAuthentication no
+
+      # Kerberos options
+      #KerberosAuthentication no
+      #KerberosOrLocalPasswd yes
+      #KerberosTicketCleanup yes
+      #KerberosGetAFSToken no
+
+      # GSSAPI options
+      #GSSAPIAuthentication no
+      #GSSAPICleanupCredentials yes
+      #GSSAPIStrictAcceptorCheck yes
+      #GSSAPIKeyExchange no
+
+      # Set this to 'yes' to enable PAM authentication, account processing,
+      # and session processing. If this is enabled, PAM authentication will
+      # be allowed through the ChallengeResponseAuthentication and
+      # PasswordAuthentication.  Depending on your PAM configuration,
+      # PAM authentication via ChallengeResponseAuthentication may bypass
+      # the setting of "PermitRootLogin without-password".
+      # If you just want the PAM account and session checks to run without
+      # PAM authentication, then enable this but set PasswordAuthentication
+      # and ChallengeResponseAuthentication to 'no'.
+      UsePAM yes
+
+      #AllowAgentForwarding yes
+      #AllowTcpForwarding yes
+      #GatewayPorts no
+      X11Forwarding yes
+      #X11DisplayOffset 10
+      #X11UseLocalhost yes
+      #PermitTTY yes
+      PrintMotd no
+      #PrintLastLog yes
+      #TCPKeepAlive yes
+      #UseLogin no
+      #PermitUserEnvironment no
+      #Compression delayed
+      #ClientAliveInterval 0
+      #ClientAliveCountMax 3
+      #UseDNS no
+      #PidFile /var/run/sshd.pid
+      #MaxStartups 10:30:100
+      #PermitTunnel no
+      #ChrootDirectory none
+      #VersionAddendum none
+
+      # no default banner path
+      #Banner none
+
+      # Allow client to pass locale environment variables
+      AcceptEnv LANG LC_*
+
+      # override default of no subsystems
+      Subsystem	sftp	/usr/lib/openssh/sftp-server
+
+      # Example of overriding settings on a per-user basis
+      #Match User anoncvs
+      #	X11Forwarding no
+      #	AllowTcpForwarding no
+      #	PermitTTY no
+      #	ForceCommand cvs server
+      #
+      # Google Compute Engine times out connections after 10 minutes of inactivity.
+      # Keep alive ssh connections by sending a packet every 2 minutes.
+      ClientAliveInterval 120
+
+      # Prevent reverse DNS lookups.
+      UseDNS no
+      AcceptEnv RD_OPTION_*
+
+      Match User javadebug
+        AllowAgentForwarding no
+        PermitOpen 127.0.0.1:8888
+        ForceCommand /bin/false
+    # }}}
+  - path: /etc/nginx/mime.types # {{{
+    content: |
+      types {
+          text/html                             html htm shtml;
+          text/css                              css;
+          text/xml                              xml;
+          image/gif                             gif;
+          image/jpeg                            jpeg jpg;
+          application/javascript                js;
+          application/atom+xml                  atom;
+          application/rss+xml                   rss;
+
+          text/mathml                           mml;
+          text/plain                            txt log;
+          text/vnd.sun.j2me.app-descriptor      jad;
+          text/vnd.wap.wml                      wml;
+          text/x-component                      htc;
+
+          image/png                             png;
+          image/tiff                            tif tiff;
+          image/vnd.wap.wbmp                    wbmp;
+          image/x-icon                          ico;
+          image/x-jng                           jng;
+          image/x-ms-bmp                        bmp;
+          image/svg+xml                         svg svgz;
+          image/webp                            webp;
+
+          application/font-woff                 woff;
+          application/java-archive              jar war ear;
+          application/json                      json;
+          application/mac-binhex40              hqx;
+          application/msword                    doc;
+          application/pdf                       pdf;
+          application/postscript                ps eps ai;
+          application/rtf                       rtf;
+          application/vnd.apple.mpegurl         m3u8;
+          application/vnd.ms-excel              xls;
+          application/vnd.ms-fontobject         eot;
+          application/vnd.ms-powerpoint         ppt;
+          application/vnd.wap.wmlc              wmlc;
+          application/vnd.google-earth.kml+xml  kml;
+          application/vnd.google-earth.kmz      kmz;
+          application/x-7z-compressed           7z;
+          application/x-cocoa                   cco;
+          application/x-java-archive-diff       jardiff;
+          application/x-java-jnlp-file          jnlp;
+          application/x-makeself                run;
+          application/x-perl                    pl pm;
+          application/x-pilot                   prc pdb;
+          application/x-rar-compressed          rar;
+          application/x-redhat-package-manager  rpm;
+          application/x-sea                     sea;
+          application/x-shockwave-flash         swf;
+          application/x-stuffit                 sit;
+          application/x-tcl                     tcl tk;
+          application/x-x509-ca-cert            der pem crt;
+          application/x-xpinstall               xpi;
+          application/xhtml+xml                 xhtml;
+          application/xspf+xml                  xspf;
+          application/zip                       zip;
+
+          application/octet-stream              bin exe dll;
+          application/octet-stream              deb;
+          application/octet-stream              dmg;
+          application/octet-stream              iso img;
+          application/octet-stream              msi msp msm;
+
+          application/vnd.openxmlformats-officedocument.wordprocessingml.document    docx;
+          application/vnd.openxmlformats-officedocument.spreadsheetml.sheet          xlsx;
+          application/vnd.openxmlformats-officedocument.presentationml.presentation  pptx;
+
+          audio/midi                            mid midi kar;
+          audio/mpeg                            mp3;
+          audio/ogg                             ogg;
+          audio/x-m4a                           m4a;
+          audio/x-realaudio                     ra;
+
+          video/3gpp                            3gpp 3gp;
+          video/mp2t                            ts;
+          video/mp4                             mp4;
+          video/mpeg                            mpeg mpg;
+          video/quicktime                       mov;
+          video/webm                            webm;
+          video/x-flv                           flv;
+          video/x-m4v                           m4v;
+          video/x-mng                           mng;
+          video/x-ms-asf                        asx asf;
+          video/x-ms-wmv                        wmv;
+          video/x-msvideo                       avi;
+      }
+    # }}}
+  - path: /etc/nginx/nginx.conf # {{{
+    content: |
+      user www-data;
+      worker_processes auto;
+      pid /run/nginx.pid;
+      include /etc/nginx/modules-enabled/*.conf;
+
+      events {
+        worker_connections 768;
+        # multi_accept on;
+      }
+
+      http {
+
+        ##
+        # Basic Settings
+        ##
+
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+        # server_tokens off;
+
+        # server_names_hash_bucket_size 64;
+        # server_name_in_redirect off;
+
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+
+        ##
+        # SSL Settings
+        ##
+
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # Dropping SSLv3, ref: POODLE
+        ssl_prefer_server_ciphers on;
+
+        ##
+        # Logging Settings
+        ##
+
+        access_log /var/log/nginx/access.log;
+        error_log /var/log/nginx/error.log;
+
+        ##
+        # Gzip Settings
+        ##
+
+        gzip on;
+
+        # gzip_vary on;
+        # gzip_proxied any;
+        # gzip_comp_level 6;
+        # gzip_buffers 16 8k;
+        # gzip_http_version 1.1;
+        # gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+        server {
+          listen 18080;
+          server_tokens off;
+          fancyindex on;
+          fancyindex_name_length 80;
+          location /index.html {
+            alias /opt/rchain-testnet-node/index.html;
+          }
+          location /files {
+            alias /var/lib/rnode;
+          }
+          location /diag {
+            alias /var/lib/rnode-diag/current;
+          }
+        }
+      }
+    # }}}
 
 
 users:
   - name: root
     ssh_authorized_keys:
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDdn0lDgsQohamrMR+hVJ6rWXQ6SFxIOOjJ3klthOF5f/R9SG8NWUTAwKCob+k9LLNJyQEgGdm2PTWkYcV1lRIrEIX7weIJ86dryUsPCqtvq2MJJK/E/dcdyFpN4EnNoXC1AWfaZyWRdr7IH5mJVtLpTeUmZCj8yDWWyJD4QprMG5LZt8MVDGh7eSmNnqknhdwiu5wxHXkX3Ctkfrex8F+fgKqQQk56SKk4C/GLzDyp1cu7tTI4ptF32RV4WMzApU0oR/7vnfdjjrv8ueHIBqW6vrvCRpRSVM1V48MqjKY/qJ7Ud8FrBsbLEx26X3vM69uQ9iGax1AJZvW25LbDu1Az rundeck
+
+  - name: javadebug
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDrHnTIYKQde734aHtWPvvpBBcXuqc+wd8aRHWBMPslTXDXAjJCPA+waeZ0ISfNeLXcCgiyXbSbe9VhawSWUBHGu4l32ljl/bT36SEZd3nsrzohkNlEdz0uLdY+CVlN/CBru1eimIvj5R2jKhT2pnNBdrxvuAevc/LA5/or14W5QfAWgtdjn1OV3fg0fbO6baVifHSAtMZtmTMTffYon8AQOAPOZkENHptUxinBm2qXfZQYpEq/m+eHf/+XkwAMA/aVcG88PrqnKmG3A974lQlKevE4gLnP+X7JTy97Kvb/tSRVmlqdQf8dndOTsTXNurZ63b/NG+zHCDbXOpI6xmbv lukasz@pc
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCW787Eso8YJgI8+2VRdtOUhwgcW2Hwd/dNQe5kkBRxWIcnL8YbIRMXcUfCqBDRPxKs9pPdyDt/3lgmXYSglypZrwA1OoprvpXVXy8tlugocNI1uTKaWh5KhLhbtdZHMvX3BPhPuTqhbp7Dz9iHV/A7VfADh+5OnRe4FAZM+U8biZBIj6X5hjZhd625PC6O+aAmkAOXrn5tVVv8rfzB1Qn2rK7sMcWQpryfMXAjULxsDTbb4yQiwLBBf8DDqPM3f5A/zTc+MZB/UqcXPC61cDUOzdMyYV2Wby1bUEy8YQImQErp1nEOdFxoZIsruiTB3c2U3e29TRnjWjTsup19d3+p dominik@pyrofex.net
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC9aZZe/6Q0LyHOjw0QJwPbTufVvvv95CrA61CiZ2mPOty+CY11aKuqjejfLOyJM0N5G7fokCJy5h4mQR+eDZRPnwLUETTwe7RQW3kJ797HWyHchyb9wgnjAJ0H05u96eQ/KCZQVWgYVxOne269UVjVZ0b2Fjq8Kh6+hz9+yq2PU8Hsf555/3XvBwKDkcfpYLdSddCu+s0HCtN5juQgIdjBbBCmz6DCVC7DAGpVwAu8vOgBaZ8RoJoceb1K8BN3EGqQO1gsUtNAzFCkxVPmFGR+4p4FcC2M4O2rAdb8ZKbqjUt0tdta2cLLQAZK6VcSJVzm63KToc2E+rZj9DIL21OwSPnFz1FakYWx/x6KOGF9nc5PQ0JLFmUfrr5J+oY9zwpAth4fIB5I7LBw/hsNxIn9fWBR+24OPaJwuzxrp+185D8LgBiH1AU9EW7uXdAJm8bcdj7tBSrnkgR+HmpajV94BY3ZSrXGUyDoYCDUzhf8r7XaI+IVEhSTpJmKN+HSye3QuI/9ZXEBTHlJ3/eAo+UUyO+Jf03eRRT2swFrMJsKPojKFwVJOshz+8sbGL0+JCQNWyFzmQs1A/MEep6fFl5MfSqn0p0/rAeWWrnVgs604hBJrBPkmEX8mK8dGt+tZ0tc0nJB44fhpujkgyjXMtxXYRM9sYDZivxg6ychCshScw== Just another key
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDN8WvI82IXBQcJOUN5GMVCZHOieUkzh2lwSBZ66wZ6ywXsyKL/PJ6o1rWrnPuURPqtV/f5XJE92lzkrNExV2TW3TCNedLQhmK/7sj4PPV2w5wZX8cppBSOdVY7fxMEmOxT3NWo67jNyqpcGW2u89h9SDknuLCkwWkHMYFt4hieUo7BbngCbojzL8nGbl5AJiFGFIstiSpfHbS305f1YgwaIgVPBiKXBA55WXM8cqZgoIcOtk7/AbvrfPpyahIsqp/gcsq+zL5gPgx+UZr9NPTVvoR0L+/ni//1eHfuwoqxQ8Hd1nZZk22/rlQK+cgB/OdhaelS/djnUsJHhBM5Ijgb
 
 
 commands:

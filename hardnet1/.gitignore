@@ -1,3 +1,5 @@
 .terraform
 terraform.tfstate
 terraform.tfstate.backup
+rchain-sre-git-crypt-key
+rchain-sre-git-crypt-key.b64

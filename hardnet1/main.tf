@@ -57,18 +57,6 @@ data "template_cloudinit_config" "node" {
     content_type = "text/x-shellscript"
     content      = "${file("rchain-sre-git-crypt-key.b64")}"
   }
-
-  part {
-    filename     = "environment.docker"
-    content_type = "text/x-shellscript"
-    content      = "${file("node-specific/node${count.index}/environment.docker")}"
-  }
-
-  part {
-    filename     = "rnode.conf"
-    content_type = "text/x-shellscript"
-    content      = "${file("node-specific/node${count.index}/rnode.conf")}"
-  }
 }
 
 

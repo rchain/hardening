@@ -53,8 +53,14 @@ data "template_cloudinit_config" "node" {
   }
 
   part {
-    filename     = "rchain-sre-git-crypt-key.b64"
-    content_type = "text/x-shellscript"
+    filename     = "part-handler.py"
+    content_type = "text/part-handler"
+    content      = "${file("part-handler.py")}"
+  }
+
+  part {
+    filename     = "/root/rchain-sre-git-crypt-key"
+    content_type = "application/base64"
     content      = "${file("rchain-sre-git-crypt-key.b64")}"
   }
 }

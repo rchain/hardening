@@ -1,0 +1,11 @@
+[Unit]
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=root
+WorkingDirectory=/root/hardening/orchestrator
+ExecStart=python3 -m pipenv run ./orchestrator/main.py
+
+[Install]
+WantedBy=multi-user.target

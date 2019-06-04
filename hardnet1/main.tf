@@ -41,15 +41,21 @@ data "template_cloudinit_config" "node" {
   base64_encode = false
 
   part {
+    filename     = "cloud-config.yaml"
+    content_type = "text/cloud-config"
+    content      = "${file("cloud-config.yaml")}"
+  }
+
+  part {
     filename     = "set-up-instance.sh"
     content_type = "text/x-shellscript"
     content      = "${file("set-up-instance.sh")}"
   }
 
   part {
-    filename     = "cloud-config.txt"
-    content_type = "text/cloud-config"
-    content      = "${file("cloud-config.yaml")}"
+    filename     = "rchain-sre-git-crypt-key.b64"
+    content_type = "text/x-shellscript"
+    content      = "${file("rchain-sre-git-crypt-key.b64")}"
   }
 
   part {

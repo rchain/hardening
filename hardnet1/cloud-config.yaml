@@ -130,6 +130,7 @@ packages:
   - build-essential
   - docker.io
   - gcsfuse
+  - git-crypt
 
 
 write_files:

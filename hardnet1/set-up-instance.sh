@@ -34,8 +34,7 @@ systemctl reload sshd
 systemctl reload nginx
 
 pushd /root
-git clone https://github.com/rchain/hardening.git /root/hardening
-base64 --decode </var/lib/cloud/instance/scripts/rchain-sre-git-crypt-key.b64 >rchain-sre-git-crypt-key
+git clone --branch=master https://github.com/rchain/hardening.git /root/hardening
 cd hardening
 git-crypt unlock ../rchain-sre-git-crypt-key
 install --mode=644 hardnet1/node-specific/"$(hostname)"/{environment.docker,rnode.conf} --target-directory=/var/lib/rnode-static/

@@ -5,6 +5,10 @@ import sys
 import time
 import asyncio
 import requests
+import structlog
+
+
+log = structlog.PrintLogger() # pylint: disable=invalid-name
 
 
 class Hostname:
@@ -31,9 +35,9 @@ def get_nodes():
     return os.environ['NODES'].split()
 
 
-async def main():
-    print("Got nodes:", get_nodes(), file=sys.stderr)
-    print("Going to sleep...", file=sys.stderr)
+async def main() -> int:
+    log.info("Got nodes: {}".format(get_nodes()))
+    log.info("Going to sleep...")
     while True:
         time.sleep(1)
     return 0

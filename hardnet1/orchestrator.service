@@ -6,6 +6,7 @@ After=network-online.target
 User=root
 WorkingDirectory=/root/hardening/orchestrator
 ExecStart=python3 -m pipenv run ./orchestrator/main.py
+EnvironmentFile=/root/hardening/hardnet1/node-specific/orchestrator/orchestrator.env
 
 [Install]
 WantedBy=multi-user.target

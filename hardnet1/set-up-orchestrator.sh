@@ -8,5 +8,4 @@ python3 -m pipenv sync
 popd
 systemctl daemon-reload
 systemctl enable --now orchestrator
-systemctl restart orchestrator
 popd

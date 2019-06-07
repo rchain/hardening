@@ -1,7 +1,7 @@
 from orchestrator.main import Hostname
 
 
-def test_hostname():
+def test_hostname() -> None:
     hostname = Hostname('hardnet1-orchestrator.c.developer-222401.internal')
 
     assert hostname.get_instance_name() == 'hardnet1-orchestrator'

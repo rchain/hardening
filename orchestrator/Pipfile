@@ -12,6 +12,7 @@ pytest = "*"
 [packages]
 asyncssh = "*"
 requests = "*"
+structlog = "*"
 
 [requires]
 python_version = "3"

@@ -4,6 +4,8 @@ import os
 import sys
 import time
 import asyncio
+from typing import List
+
 import requests
 import structlog
 
@@ -12,26 +14,26 @@ log = structlog.PrintLogger() # pylint: disable=invalid-name
 
 
 class Hostname:
-    def __init__(self, hostname):
+    def __init__(self, hostname: str) -> None:
         self.instance_name, self.domain = hostname.split('.', maxsplit=1)
 
-    def get_instance_name(self):
+    def get_instance_name(self) -> str:
         return self.instance_name
 
-    def get_domain(self):
+    def get_domain(self) -> str:
         return self.domain
 
-    def with_instance_name(self, new_instance_name):
+    def with_instance_name(self, new_instance_name: str) -> 'Hostname':
         return Hostname('{}.{}'.format(new_instance_name, self.domain))
 
 
-def get_google_cloud_hostname():
+def get_google_cloud_hostname() -> Hostname:
     resp = requests.get('http://metadata.google.internal/computeMetadata/v1/instance/hostname')
     resp.raise_for_status()
-    return Hostname(resp.content)
+    return Hostname(resp.text)
 
 
-def get_nodes():
+def get_nodes() -> List[str]:
     return os.environ['NODES'].split()
 
 

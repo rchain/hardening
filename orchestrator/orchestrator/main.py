@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import sys
 import time
 import asyncio
@@ -26,7 +27,12 @@ def get_google_cloud_hostname():
     return Hostname(resp.content)
 
 
+def get_nodes():
+    return os.environ['NODES'].split()
+
+
 async def main():
+    print("Got nodes:", get_nodes(), file=sys.stderr)
     print("Going to sleep...", file=sys.stderr)
     while True:
         time.sleep(1)

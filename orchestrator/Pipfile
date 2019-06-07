@@ -9,6 +9,7 @@ python-language-server = {extras = ["all"],version = "*"}
 [packages]
 mypy = "*"
 pylint = "*"
+asyncssh = "*"
 
 [requires]
 python_version = "3"

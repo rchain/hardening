@@ -25,3 +25,28 @@ google_compute_instance.INSTANCE_NAME` and then `terraform apply`.  `terraform
 apply` alone won't work!
 
 `tail -f /var/log/cloud-init-output.log` can be used to see when cloud-init finished job.
+
+## Development Workflow
+
+In order to avoid repeated deployments via Terraform,
+[Mutagen](https://mutagen.io/) can be used to mirror changes made to a
+developer-local repository clone, onto the cloud instance running the
+Orchestrator:
+
+```
+$ cd orchestrator
+$ mutagen create --sync-mode=one-way-replica --default-file-mode=0666 . root@$(gce-get-external-ip hardnet1-orchestrator):/root/hardening/orchestrator
+$ mutagen monitor
+```
+
+In another window:
+
+```
+$ gcloud compute --project "developer-222401" ssh --zone "europe-north1-a" "hardnet1-orchestrator" -- journalctl -fu orchestrator
+```
+
+Synchronized changes to the Orchestrator source code won't take effect until it is restarted:
+
+```
+$ gcloud compute --project "developer-222401" ssh --zone "europe-north1-a" "hardnet1-orchestrator" -- sudo systemctl restart orchestrator
+```

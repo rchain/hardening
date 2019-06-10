@@ -64,6 +64,36 @@ data "template_cloudinit_config" "orchestrator" {
 }
 
 
+data "template_cloudinit_config" "bootstrap" {
+  gzip          = false
+  base64_encode = false
+
+  part {
+    filename     = "cloud-config.yaml"
+    content_type = "text/cloud-config"
+    content      = "${file("cloud-config.yaml")}"
+  }
+
+  part {
+    filename     = "set-up.sh"
+    content_type = "text/x-shellscript"
+    content      = "${file("set-up-instance.sh")} ${file("set-up-bootstrap.sh")}"
+  }
+
+  part {
+    filename     = "part-handler.py"
+    content_type = "text/part-handler"
+    content      = "${file("part-handler.py")}"
+  }
+
+  part {
+    filename     = "/root/rchain-sre-git-crypt-key"
+    content_type = "application/base64"
+    content      = "${file("rchain-sre-git-crypt-key.b64")}"
+  }
+}
+
+
 data "template_cloudinit_config" "node" {
   count = "${var.node_count}"
 
@@ -118,6 +148,45 @@ resource "google_compute_instance" "orchestrator" {
       image = "ubuntu-os-cloud/ubuntu-1810"
       size = 160
       type = "pd-standard"
+    }
+  }
+
+  tags = [
+    "${var.resources_name}-node",
+    "collectd-out",
+    "elasticsearch-out",
+    "logstash-tcp-out",
+    "logspout-http"
+  ]
+
+  service_account {
+    email = "${google_service_account.svc_account_node.email}"
+    scopes = [ "https://www.googleapis.com/auth/cloud-platform" ]
+  }
+
+  network_interface {
+    network = "default"
+    access_config {
+    }
+  }
+}
+
+
+resource "google_compute_instance" "bootstrap" {
+  name = "${var.resources_name}-bootstrap"
+
+  # Nonstandard amount of RAM
+  machine_type = "custom-4-16384"
+
+  metadata {
+    user-data = "${data.template_cloudinit_config.bootstrap.rendered}"
+  }
+
+  boot_disk {
+    initialize_params {
+      image = "ubuntu-os-cloud/ubuntu-1810"
+      size = 160
+      type = "pd-ssd"
     }
   }
 

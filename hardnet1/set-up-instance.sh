@@ -34,6 +34,7 @@ systemctl reload sshd
 systemctl reload nginx
 
 pushd /root
+touch .hushlogin
 git clone --branch=master https://github.com/rchain/hardening.git /root/hardening
 cd hardening
 git-crypt unlock ../rchain-sre-git-crypt-key

@@ -4,14 +4,13 @@ import os
 import sys
 import time
 import asyncio
-from typing import cast, List
+import logging
+from typing import (
+    List,
+)
 
 import asyncssh
 import requests
-import structlog
-
-
-log = structlog.PrintLogger() # pylint: disable=invalid-name
 
 
 class Hostname:
@@ -32,7 +31,10 @@ class Hostname:
 
 
 def get_google_cloud_hostname() -> Hostname:
-    resp = requests.get('http://metadata.google.internal/computeMetadata/v1/instance/hostname')
+    headers = {
+        'Metadata-Flavor': 'Google',
+    }
+    resp = requests.get('http://metadata.google.internal/computeMetadata/v1/instance/hostname', headers=headers)
     resp.raise_for_status()
     return Hostname(resp.text)
 
@@ -41,34 +43,38 @@ def get_instance_names() -> List[str]:
     return os.environ['NODES'].split()
 
 
-async def start_rnode_on(instance_hostname: Hostname) -> str:
-    command = 'docker pull rchain'
-    async with asyncssh.connect(str(instance_hostname)) as conn:
-        log.info("{}: {}".format(instance_hostname, command))
-        result = await conn.run(command, check=True)
-        log.info("{}: {}".format(instance_hostname, result))
-        return cast(str, result)
+async def start_rnode_on(ssh_private_key_file_path: str, instance_hostname: Hostname) -> None:
+    command = 'docker pull rchain/rnode:latest'
+    async with asyncssh.connect(str(instance_hostname), client_keys=[ssh_private_key_file_path], known_hosts=None) as conn:
+        await conn.run(command, check=True)
 
 
 async def set_up_network() -> None:
+    ssh_private_key_file_path = os.environ['SSH_PRIVATE_KEY_FILE_PATH']
     this_hostname = get_google_cloud_hostname()
     for instance_name in get_instance_names():
         instance_hostname = this_hostname.with_instance_name(instance_name)
-        await start_rnode_on(instance_hostname)
+        await start_rnode_on(ssh_private_key_file_path, instance_hostname)
 
 
 async def deploy_propose_forever() -> None:
-    log.info("Going to sleep...")
+    logging.info("Going to sleep...")
     while True:
         time.sleep(1)
 
 
 async def main() -> int:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     try:
         await set_up_network()
         await deploy_propose_forever()
+    except asyncssh.process.ProcessError as process_error:
+        logging.exception(process_error)
+        logging.error("returncode: %d", process_error.returncode)
+        logging.error("stdout: %s", process_error.stdout)
+        logging.error("stderr: %s", process_error.stderr)
     except Exception: # pylint: disable=broad-except
-        log.exception("Failure")
+        logging.exception("Failure")
         return 1
     return 0
 

@@ -3,10 +3,13 @@
 import os
 import sys
 import time
+import shlex
 import asyncio
 import logging
 from typing import (
+    cast,
     List,
+    Dict,
 )
 
 import asyncssh
@@ -43,10 +46,73 @@ def get_instance_names() -> List[str]:
     return os.environ['NODES'].split()
 
 
+def render_command(fields: List[str]) -> str:
+    return ' '.join(shlex.quote(f) for f in fields)
+
+
+def make_rnode_command(rnode_docker_image: str) -> List[str]:
+    shell_fields = [
+        'docker',
+        'run',
+        '--detach',
+        '--name=rnode',
+        '--network=host',
+        '--env-file=/var/lib/rnode-static/environment.docker',
+        '--volume=/var/lib/rnode:/var/lib/rnode',
+        '--volume=/var/lib/rnode-static:/var/lib/rnode-static:ro',
+        '--volume=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2:/opt/libjemalloc.so.2:ro',
+        '--entrypoint=/opt/docker/bin/rnode',
+        rnode_docker_image,
+        '--grpc-port=40401',
+        '-J-Xdebug',
+        '-J-Xrunjdwp:transport=dt_socket,address=127.0.0.1:8888,server=y,suspend=n',
+        '-XX:+HeapDumpOnOutOfMemoryError',
+        '-XX:HeapDumpPath=$DIAG_DIR/heapdump_OOM.hprof',
+        '-XX:+ExitOnOutOfMemoryError',
+        '-XX:ErrorFile=$DIAG_DIR/hs_err.log',
+        '-XX:MaxJavaStackTraceDepth=100000',
+        '-XX:NativeMemoryTracking=detail',
+        '-Dlogback.configurationFile=/var/lib/rnode-static/logback.xml',
+        '-p docker',
+        '-c /var/lib/rnode-static/rnode.conf',
+        'run',
+        '--network=hardnet1',
+        '--map-size=1099511627776'
+        '--store-type=v2',
+        '--genesis-validator=false',
+        '--kademlia-port=40404',
+        '--port=40400',
+        '--required-sigs=0',
+    ]
+    return shell_fields
+
+
+def make_rnode_bootstrap_command(rnode_docker_image: str) -> List[str]:
+    shell_fields = make_rnode_command(rnode_docker_image)
+    shell_fields.append('--standalone=true')
+    return shell_fields
+
+
+def make_rnode_peer_command(rnode_docker_image: str, bootstrap_uri: str) -> List[str]:
+    shell_fields = make_rnode_command(rnode_docker_image)
+    shell_fields.append('--bootstrap={}'.format(bootstrap_uri))
+    return shell_fields
+
+
 async def start_rnode_on(ssh_private_key_file_path: str, instance_hostname: Hostname) -> None:
-    command = 'docker pull rchain/rnode:latest'
+    rnode_docker_image = 'rchain/rnode:v0.9.3'
+    docker_pull = ['docker', 'pull', rnode_docker_image]
+    bootstrap_command = make_rnode_bootstrap_command(rnode_docker_image)
     async with asyncssh.connect(str(instance_hostname), client_keys=[ssh_private_key_file_path], known_hosts=None) as conn:
-        await conn.run(command, check=True)
+        await conn.run(render_command(docker_pull), check=True)
+        await conn.run(render_command(bootstrap_command), check=True)
+
+
+async def get_rnode_status(hostname: Hostname) -> Dict[str, str]:
+    status_url = 'http://{}/status'.format(hostname)
+    resp = requests.get(status_url)
+    resp.raise_for_status()
+    return cast(Dict[str, str], resp.json())
 
 
 async def set_up_network() -> None:

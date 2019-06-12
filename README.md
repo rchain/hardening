@@ -33,6 +33,15 @@ In order to avoid repeated deployments via Terraform,
 developer-local repository clone, onto the cloud instance running the
 Orchestrator:
 
+In `~/.ssh/config`:
+
+```
+Host ORCHESTRATOR_INSTANCE_EXTERNAL_IP orchestrator
+    HostName ORCHESTRATOR_INSTANCE_EXTERNAL_IP
+    User root
+    IdentityFile PATH_TO_ID_ORCHESTRATOR_PRIVATE_KEY_FILE
+```
+
 ```
 $ cd orchestrator
 $ mutagen create --sync-mode=one-way-replica --default-file-mode=0666 . root@$(gce-get-external-ip hardnet1-orchestrator):/root/hardening/orchestrator

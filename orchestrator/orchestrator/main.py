@@ -65,7 +65,7 @@ def render_command(fields: List[str]) -> str:
     return ' '.join(shlex.quote(f) for f in fields)
 
 
-def make_rnode_command() -> List[str]:
+def make_rnode_command(advertised_hostname: Hostname) -> List[str]:
     shell_fields = [
         'docker',
         'run',
@@ -90,6 +90,8 @@ def make_rnode_command() -> List[str]:
         '--config-file=/var/lib/rnode-static/rnode.conf',
         'run',
         '--network=hardnet1',
+        '--host={}'.format(advertised_hostname),
+        '--allow-private-addresses',
         '--map-size=1099511627776',
         '--kademlia-port=40404',
         '--port=40400',
@@ -99,21 +101,21 @@ def make_rnode_command() -> List[str]:
     return shell_fields
 
 
-def make_rnode_bootstrap_command() -> List[str]:
-    shell_fields = make_rnode_command()
+def make_rnode_bootstrap_command(bootstrap_hostname: Hostname) -> List[str]:
+    shell_fields = make_rnode_command(bootstrap_hostname)
     shell_fields.append('--standalone')
     return shell_fields
 
 
-def make_rnode_peer_command(bootstrap_uri: str) -> List[str]:
-    shell_fields = make_rnode_command()
+def make_rnode_peer_command(bootstrap_uri: str, peer_hostname: Hostname) -> List[str]:
+    shell_fields = make_rnode_command(peer_hostname)
     shell_fields.append('--bootstrap={}'.format(bootstrap_uri))
     return shell_fields
 
 
-async def start_peer_node(conn: Any, bootstrap_uri: str) -> None:
+async def start_peer_node(conn: Any, bootstrap_uri: str, peer_hostname: Hostname) -> None:
     docker_pull = ['docker', 'pull', RNODE_DOCKER_IMAGE]
-    rnode_command = make_rnode_peer_command(bootstrap_uri)
+    rnode_command = make_rnode_peer_command(bootstrap_uri, peer_hostname)
     await conn.run(render_command(docker_pull), check=True)
     await conn.run(render_command(['docker', 'kill', 'rnode']))
     await conn.run(render_command(['docker', 'rm', 'rnode']))
@@ -138,9 +140,9 @@ async def wait_bootstrap_started(bootstrap_hostname: Hostname) -> str:
     raise BootstrapStartFailedError()
 
 
-async def start_bootstrap_node(bootstrap_conn: Any) -> None:
+async def start_bootstrap_node(bootstrap_conn: Any, bootstrap_hostname: Hostname) -> None:
     docker_pull = ['docker', 'pull', RNODE_DOCKER_IMAGE]
-    rnode_command = make_rnode_bootstrap_command()
+    rnode_command = make_rnode_bootstrap_command(bootstrap_hostname)
     await bootstrap_conn.run(render_command(docker_pull), check=True)
     await bootstrap_conn.run(render_command(['docker', 'kill', 'rnode']))
     await bootstrap_conn.run(render_command(['docker', 'rm', 'rnode']))
@@ -167,12 +169,12 @@ async def set_up_network() -> None:
     this_hostname = get_google_cloud_hostname()
     bootstrap_hostname = this_hostname.with_instance_name(network, 'bootstrap')
     async with asyncssh.connect(str(bootstrap_hostname), client_keys=[ssh_private_key_file_path], known_hosts=None) as bootstrap_conn:
-        await start_bootstrap_node(bootstrap_conn)
+        await start_bootstrap_node(bootstrap_conn, bootstrap_hostname)
         bootstrap_uri = await wait_bootstrap_started(bootstrap_hostname)
         for instance_name in get_instance_names():
             instance_hostname = this_hostname.with_instance_name(network, instance_name)
             async with asyncssh.connect(str(instance_hostname), client_keys=[ssh_private_key_file_path], known_hosts=None) as peer_conn:
-                await start_peer_node(peer_conn, bootstrap_uri)
+                await start_peer_node(peer_conn, bootstrap_uri, instance_hostname)
 
     desired_peers_number = len(get_instance_names())
     await wait_peers_connected(bootstrap_hostname, desired_peers_number)
